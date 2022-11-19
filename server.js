@@ -1,47 +1,48 @@
 const net = require("net");
-const { nanoid } = require("nanoid")
 const { Level } = require("level")
+const JsonSocket = require("json-socket");
+
+const db = new Level("db", { keyEncoding: "view", valueEncoding: "json" });
 
 const port = 6969;
 const host = "127.0.0.1";
 
-const db = new Level("db", { valueEncoding: "json" });
-
 const server = net.createServer();
-
-let id = 1;
+server.listen(port, host, () => {
+    console.log(`Level DB server running on ${port}...`);
+});
 
 server.on("connection", (socket) => {
-    console.log(`Connection opened for client ${socket.remoteAddress}:${socket.remotePort}`)
+    const {remoteAddress, remotePort} = socket;
+    socket = new JsonSocket(socket);
 
-    socket.setEncoding('utf8');
+    console.log(`Connection opened for client ${remoteAddress}:${remotePort}`)
 
-    socket.on("data", (data) => {
-        console.log(`Received data from client ${socket.remoteAddress}:${socket.remotePort}`);
-        console.log(`Type of data: ${typeof data}`);
+    socket.on("message", (message) => {
+        console.log(`Received data from client ${remoteAddress}:${remotePort}`);
 
-        const message = JSON.parse(data);
-
-        switch (message.t) {
-            case "P":
-                db.put(id, message.d, (error) => {
+        switch (message.type) {
+            case "PUT":
+                db.put(message.key, message.value, (error) => {
                     if(error)
                         throw Error("Put failed");
                     
-                    socket.write(JSON.stringify({id}));
-                    id++;
+                    socket.sendEndMessage({key: message.key});
                 });
                 break;
-            case "G":
-                db.get(message.d.key, (error, value) => {
-                    console.log("KEY: " + message.d.key);
-                    console.log("ERROR: " + error);
-                    console.log("VALUE: " + JSON.stringify(value));
-                    socket.write(JSON.stringify(value));
+            case "GET":
+                db.get(message.key, (error, value) => {
+                    if(error)
+                        throw new Error("Get failed");
+
+                    socket.sendEndMessage(value);
                 });
                 break;
-            case "D":
-                db.del(message.d.key);
+            case "DEL":
+                db.del(message.key, (error) => {
+                    if(error)
+                        throw new Error("Delete failed");
+                });
                 break;
             default:
                 throw Error("Unsupported operation type");
@@ -49,14 +50,11 @@ server.on("connection", (socket) => {
     });
 
     socket.on("close", (data) => {
-        console.log(`Connection closed for client ${socket.remoteAddress}:${socket.remotePort}`)
+        console.log(`Connection closed for client ${remoteAddress}:${remotePort}`)
     });
 
     socket.on("error", (error) => {
-        console.error(`Client connection error for client ${socket.remoteAddress}:${socket.remotePort}`)
+        console.error(`Client connection error for client ${remoteAddress}:${remotePort}`)
     });
-});
 
-server.listen(port, host, () => {
-    console.log(`Level DB server running on port ${port}`);
 });
