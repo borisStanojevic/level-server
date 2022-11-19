@@ -1,0 +1,16 @@
+{
+  "name": "level-db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "borisStanojevic",
+  "license": "ISC",
+  "dependencies": {
+    "json-duplex-stream": "^1.2.0",
+    "level": "^8.0.0",
+    "nanoid": "^3.3.4"
+  }
+}
