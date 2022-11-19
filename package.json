@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "json-duplex-stream": "^1.2.0",
+    "json-socket": "^0.3.0",
     "level": "^8.0.0",
     "nanoid": "^3.3.4"
   }
