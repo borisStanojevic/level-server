@@ -1,2 +1,2 @@
-# level-tcp-server
-TCP server for high performance key-value database Level DB.
+# LevelDB TCP Server
+TCP server for high performance key-value database LevelDB.
