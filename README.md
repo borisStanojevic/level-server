@@ -1,2 +1,2 @@
 # LevelDB TCP Server
-TCP server for high performance key-value database LevelDB.
+A simple server for high performance key-value database LevelDB. Uses JSON based messaging.
